@@ -1,0 +1,37 @@
+@baseUrl = http://localhost:3001
+@adminEmailForTesting = admin@ecommerce.com
+@adminPasswordForTesting = admin123
+# @adminToken = {{adminLogin.response.body.accessToken}}
+# @refreshToken = {{adminLogin.response.body.refreshToken}}
+@userEmailForTesting = user@ecommerce.com
+@userPasswordForTesting = user123
+# @userToken = {{userLogin.response.body.accessToken}}
+# @userToken = {{userLogin.response.body.refreshToken}}
+# @productId = {{createProduct.response.body.id}}
+# @addressId = {{addAddress.response.body.id}}
+# @userId = {{userLogin.response.body.id}}
+
+
+
+### Register New User
+# @name registerUser
+POST {{baseUrl}}/user
+Content-Type: application/json
+
+{
+  "name": "12313",
+  "email": "abbbbbbbb1@ecommerce.com",
+  "password": "senha123"
+}
+
+
+### Login user
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "abbbbbbbb1@ecommerce.com",
+  "password": "senha123"
+}
+
