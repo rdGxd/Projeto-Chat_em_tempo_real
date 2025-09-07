@@ -11,7 +11,23 @@
 # @addressId = {{addAddress.response.body.id}}
 # @userId = {{userLogin.response.body.id}}
 
+### Auth
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
+{
+  "email": "abbbbbbbb1@ecommerce.com",
+  "password": "senha123"
+}
+
+# @name refreshToken
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
 
 ### Register New User
 # @name registerUser
@@ -25,13 +41,5 @@ Content-Type: application/json
 }
 
 
-### Login user
-# @name loginUser
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
 
-{
-  "email": "abbbbbbbb1@ecommerce.com",
-  "password": "senha123"
-}
 

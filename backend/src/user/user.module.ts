@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { HashingModule } from 'src/common/HashingPassowrd/hashing.module';
+import { HashingModule } from 'src/common/HashingPassword/hashing.module';
 import { User, UserSchema } from './entities/user.entity';
 import { UserMapper } from './mappers/UserMapper';
 import { UserController } from './user.controller';

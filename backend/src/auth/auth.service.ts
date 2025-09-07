@@ -7,11 +7,12 @@ import {
 import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from 'src/common/config/jwtConfig';
-import { HashingProtocol } from 'src/common/HashingPassowrd/HashingProtocol';
+import { HashingProtocol } from 'src/common/HashingPassword/HashingProtocol';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { AuthMapper } from './mapper/auth-mapper';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly hashingService: HashingProtocol,
     private readonly jwtService: JwtService,
+    private readonly authMapper: AuthMapper,
   ) {}
 
   async login(login: LoginAuthDto) {
@@ -38,32 +40,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.createToken(user);
-  }
-
-  async createToken(user: User) {
-    const accessTokenPromise = this.signJwtAsync<Partial<User>>(
-      user._id.toString(),
-      this.jwtConfiguration.signOptions.expiresIn,
-    );
-
-    const refreshTokenPromise = this.signJwtAsync(
-      user._id.toString(),
-      this.jwtConfiguration.refreshToken,
-    );
-
-    const [accessToken, refreshToken] = await Promise.all([
-      accessTokenPromise,
-      refreshTokenPromise,
-    ]);
-    console.log(accessTokenPromise, refreshTokenPromise);
-
-    return {
-      accessToken,
-      refreshToken,
-      expiresIn: this.jwtConfiguration.signOptions.expiresIn,
-      refreshTokenExpiresIn: this.jwtConfiguration.refreshToken,
-    };
+    return this.createToken(user._id.toString());
   }
 
   async refreshTokens(refreshTokenDto: RefreshTokenDto) {
@@ -82,14 +59,32 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      const newTokens = await this.createToken(user);
+      const newTokens = await this.createToken(user._id.toString());
       return newTokens;
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-  async signJwtAsync<T>(sub: string, expiresIn: number, payload?: T) {
+  private async createToken(userId: string) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.signJwtAsync(userId, this.jwtConfiguration.signOptions.expiresIn),
+      this.signJwtAsync(userId, this.jwtConfiguration.refreshToken),
+    ]);
+
+    return this.authMapper.toDto({
+      accessToken,
+      refreshToken,
+      expiresIn: Number(this.jwtConfiguration.signOptions.expiresIn),
+      refreshTokenExpiresIn: Number(this.jwtConfiguration.refreshToken),
+    });
+  }
+
+  private async signJwtAsync(
+    sub: string,
+    expiresIn: number,
+    payload?: Partial<User>,
+  ) {
     return await this.jwtService.signAsync(
       {
         sub,
