@@ -11,7 +11,9 @@ import { HashingProtocol } from 'src/common/HashingPassword/HashingProtocol';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { PayloadDto } from './dto/payload.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { AuthMapper } from './mapper/auth-mapper';
 
 @Injectable()
@@ -41,6 +43,14 @@ export class AuthService {
     }
 
     return this.createToken(user._id.toString());
+  }
+
+  async register(registerDto: RegisterUserDto) {
+    return await this.userService.create(registerDto);
+  }
+
+  async getProfile(payload: PayloadDto) {
+    return await this.userService.findOneByPayload(payload);
   }
 
   async refreshTokens(refreshTokenDto: RefreshTokenDto) {
@@ -75,8 +85,8 @@ export class AuthService {
     return this.authMapper.toDto({
       accessToken,
       refreshToken,
-      expiresIn: Number(this.jwtConfiguration.signOptions.expiresIn),
-      refreshTokenExpiresIn: Number(this.jwtConfiguration.refreshToken),
+      expiresIn: this.jwtConfiguration.signOptions.expiresIn,
+      refreshTokenExpiresIn: this.jwtConfiguration.refreshToken,
     });
   }
 

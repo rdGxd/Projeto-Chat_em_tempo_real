@@ -1,6 +1,6 @@
 import {
-  BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -33,10 +33,15 @@ export class UserService {
     return users.map((user) => this.userMapper.toResponse(user));
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, payload: PayloadDto) {
     const user = await this.findById(id);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
+    }
+    if (payload.sub !== id) {
+      throw new UnauthorizedException(
+        'You are not authorized to access this user',
+      );
     }
     return this.userMapper.toResponse(user);
   }
@@ -44,7 +49,7 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto, payload: PayloadDto) {
     const user = await this.findById(id);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
     if (payload.sub !== id) {
       throw new UnauthorizedException('You can only update your own profile');
@@ -70,7 +75,7 @@ export class UserService {
   ) {
     const user = await this.findById(id);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
     if (payload.sub !== id) {
       throw new UnauthorizedException('You can only update your own profile');
@@ -80,23 +85,30 @@ export class UserService {
       updatePasswordDto.oldPassword,
       user.password,
     );
+
     if (!isValid) {
       throw new UnauthorizedException('Old password is incorrect');
     }
 
-    user.password = await this.hashingService.hash(
+    const hashedPassword = await this.hashingService.hash(
       updatePasswordDto.newPassword,
     );
+    const userUpdated = await this.userModel.findByIdAndUpdate(
+      id,
+      { password: hashedPassword },
+      { new: true }, // retorna o doc atualizado
+    );
 
-    await user.save();
-    return this.userMapper.toResponse(user);
+    if (!userUpdated) return;
+
+    return this.userMapper.toResponse(userUpdated);
   }
 
   async remove(id: string, payload: PayloadDto) {
     const user = await this.findById(id);
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     if (payload.sub !== id) {
@@ -111,20 +123,28 @@ export class UserService {
   }
 
   // NOTE: Método apenas para uso da aplicação
-  findByEmail(email: string) {
-    return this.userModel.findOne({ email });
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   // NOTE: Método apenas para uso da aplicação
-  findById(id: string) {
-    return this.userModel.findById(id);
+  async findById(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   // NOTE: Método apenas para uso da aplicação
   async findOneByPayload(payload: PayloadDto) {
     const user = await this.userModel.findById(payload.sub);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
     return this.userMapper.toResponse(user);
   }

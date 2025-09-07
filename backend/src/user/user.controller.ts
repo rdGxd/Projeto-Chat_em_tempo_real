@@ -15,8 +15,11 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  findOne(
+    @Param('id') id: string,
+    @TokenPayLoadParam() tokenPayload: PayloadDto,
+  ) {
+    return this.userService.findOne(id, tokenPayload);
   }
 
   @Patch(':id')

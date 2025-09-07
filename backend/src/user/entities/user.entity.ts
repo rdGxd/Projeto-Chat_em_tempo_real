@@ -18,7 +18,7 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ enum: UserStatus, default: UserStatus.OFFLINE })
+  @Prop({ type: String, enum: UserStatus, default: UserStatus.OFFLINE })
   status: UserStatus;
 
   @Prop({
