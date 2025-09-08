@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Roles } from 'src/common/enums/role';
 import { UserStatus } from '../enum/UserStatus';
 
@@ -21,12 +21,20 @@ export class User {
   @Prop({ type: String, enum: UserStatus, default: UserStatus.OFFLINE })
   status: UserStatus;
 
+  // One-to-Many: User → Messages
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }] })
+  message: Types.ObjectId[];
+
   @Prop({
     type: [String], // tipo dos elementos do array
     enum: Roles, // enum válido
     default: [Roles.USER],
   })
   roles: Roles[];
+
+  // Many-to-One: User → Room
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Room' })
+  room: Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;

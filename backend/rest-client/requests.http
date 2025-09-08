@@ -1,15 +1,11 @@
 @baseUrl = http://localhost:3001
-@adminEmailForTesting = admin@ecommerce.com
-@adminPasswordForTesting = admin123
-# @adminToken = {{adminLogin.response.body.accessToken}}
-# @refreshToken = {{adminLogin.response.body.refreshToken}}
-@userEmailForTesting = user@ecommerce.com
-@userPasswordForTesting = user123
-# @userToken = {{userLogin.response.body.accessToken}}
-# @userToken = {{userLogin.response.body.refreshToken}}
-# @productId = {{createProduct.response.body.id}}
-# @addressId = {{addAddress.response.body.id}}
-# @userId = {{userLogin.response.body.id}}
+@emailForTesting = admin@ecommerce.com
+@passwordForTesting = admin123
+@accessToken = {{loginUser.response.body.accessToken}}
+@refreshToken = {{loginUser.response.body.refreshToken}}
+@emailForTesting2 = user@ecommerce.com
+@passwordForTesting2 = user123
+@userId = {{registerUser.response.body.id}}
 
 ### Auth
 # @name loginUser
@@ -17,10 +13,11 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "abbbbbbbb1@ecommerce.com",
-  "password": "senha123"
+  "email": "{{emailForTesting}}",
+  "password": "{{passwordForTesting}}"
 }
 
+### Refresh Token
 # @name refreshToken
 POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
@@ -31,13 +28,13 @@ Content-Type: application/json
 
 ### Register New User
 # @name registerUser
-POST {{baseUrl}}/user
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "name": "12313",
-  "email": "abbbbbbbb1@ecommerce.com",
-  "password": "senha123"
+  "name": "Testando",
+  "email": "1{{emailForTesting}}",
+  "password": "{{passwordForTesting}}"
 }
 
 

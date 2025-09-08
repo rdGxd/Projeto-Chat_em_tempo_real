@@ -7,5 +7,5 @@ export default registerAs('jwt', () => ({
     audience: process.env.JWT_AUDIENCE,
     issuer: process.env.JWT_ISSUER,
   },
-  refreshToken: Number(process.env.JWT_REFRESH_TOKEN ?? '86400'),
+  refreshToken: Number(process.env.JWT_SECRET_REFRESH ?? '86400'),
 }));
