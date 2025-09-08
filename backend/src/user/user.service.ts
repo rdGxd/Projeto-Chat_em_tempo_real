@@ -34,27 +34,12 @@ export class UserService {
   }
 
   async findOne(id: string, payload: PayloadDto) {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (payload.sub !== id) {
-      throw new UnauthorizedException(
-        'You are not authorized to access this user',
-      );
-    }
+    const user = await this.ensureUserIsOwner(payload, id);
     return this.userMapper.toResponse(user);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, payload: PayloadDto) {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (payload.sub !== id) {
-      throw new UnauthorizedException('You can only update your own profile');
-    }
-
+    await this.ensureUserIsOwner(payload, id);
     const updatedUser = await this.userModel.findByIdAndUpdate(
       { _id: id },
       updateUserDto,
@@ -73,13 +58,7 @@ export class UserService {
     updatePasswordDto: UpdatePasswordDto,
     payload: PayloadDto,
   ) {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (payload.sub !== id) {
-      throw new UnauthorizedException('You can only update your own profile');
-    }
+    const user = await this.ensureUserIsOwner(payload, id);
 
     const isValid = await this.hashingService.compare(
       updatePasswordDto.oldPassword,
@@ -105,15 +84,7 @@ export class UserService {
   }
 
   async remove(id: string, payload: PayloadDto) {
-    const user = await this.findById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    if (payload.sub !== id) {
-      throw new UnauthorizedException('You can only delete your own account');
-    }
+    await this.ensureUserIsOwner(payload, id);
 
     const deletedUser = await this.userModel.findByIdAndDelete(id);
 
@@ -147,5 +118,18 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     return this.userMapper.toResponse(user);
+  }
+
+  // NOTE: Método apenas para uso da aplicação
+  private async ensureUserIsOwner(payload: PayloadDto, id: string) {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (payload.sub !== id) {
+      throw new UnauthorizedException('You are not authorized');
+    }
+    return user;
   }
 }

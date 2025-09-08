@@ -1,8 +1,9 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { UserStatus } from '../enum/UserStatus';
 
 export class ResponseUserDto {
   @Expose()
+  @Transform(({ obj }) => obj._id.toString())
   id: string;
   @Expose()
   name: string;
@@ -11,7 +12,11 @@ export class ResponseUserDto {
   @Expose()
   status: UserStatus;
   @Expose()
-  createdAt: Date;
+  @Transform(({ value }) => value.toISOString())
+  createdAt: string;
   @Expose()
-  updatedAt: Date;
+  @Transform(({ value }) => value.toISOString())
+  updatedAt: string;
+  @Expose()
+  roles: string[];
 }

@@ -6,6 +6,8 @@
 @emailForTesting2 = user@ecommerce.com
 @passwordForTesting2 = user123
 @userId = {{registerUser.response.body.id}}
+@roomId = {{createRoom.response.body.id}}
+
 
 ### Auth
 # @name loginUser
@@ -38,5 +40,40 @@ Content-Type: application/json
 }
 
 
+### Create Room
+# @name createRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
+{
+  "name": "Sala de Teste"
+}
 
+### Get All room
+# @name getAllroom
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Get Room by ID
+# @name getRoomById
+GET {{baseUrl}}/room/{{roomId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Update Room
+# @name updateRoom
+PUT {{baseUrl}}/room/{{roomId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Sala de Teste Atualizada"
+}
+
+### Delete Room
+# @name deleteRoom
+DELETE {{baseUrl}}/room/{{roomId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
