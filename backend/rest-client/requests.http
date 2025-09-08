@@ -1,4 +1,16 @@
+# ============================================
+# 🔧 CONFIGURAÇÕES GLOBAIS
+# ============================================
+
+# 🔧 DESENVOLVIMENTO
 @baseUrl = http://localhost:3001
+
+# 🔧 PRODUÇÃO
+# @baseUrl = https://api.seuprojeto.com
+
+# 🔧 STAGING
+# @baseUrl = https://staging-api.seuprojeto.com
+
 @emailForTesting = admin@ecommerce.com
 @passwordForTesting = admin123
 @accessToken = {{loginUser.response.body.accessToken}}
@@ -8,8 +20,21 @@
 @userId = {{registerUser.response.body.id}}
 @roomId = {{createRoom.response.body.id}}
 
+# ============================================
+# 🎯 SCRIPTS DE CENÁRIOS
+# ============================================
 
-### Auth
+# 📝 SCRIPT 1: FLUXO COMPLETO DE ADMINISTRADOR
+# Sequência: Login Admin → Criar Sala → Criar Mensagem → Gerenciar Usuários
+
+# 📝 SCRIPT 2: FLUXO COMPLETO DE USUÁRIO COMUM
+# Sequência: Registro → Login → Entrar em Sala → Enviar Mensagem
+
+# ============================================
+# 🔐 AUTENTICAÇÃO
+# ============================================
+
+### Login de Usuário
 # @name loginUser
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
@@ -28,7 +53,7 @@ Content-Type: application/json
   "refreshToken": "{{refreshToken}}"
 }
 
-### Register New User
+### Registrar Novo Usuário
 # @name registerUser
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
@@ -39,8 +64,214 @@ Content-Type: application/json
   "password": "{{passwordForTesting}}"
 }
 
+# ============================================
+# 🎯 SCRIPT 1: FLUXO ADMINISTRADOR
+# ============================================
 
-### Create Room
+### [SCRIPT 1 - PASSO 1] Login como Admin
+# @name script1_loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{emailForTesting}}",
+  "password": "{{passwordForTesting}}"
+}
+
+### [SCRIPT 1 - PASSO 2] Criar Sala como Admin
+# @name script1_createRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{script1_loginAdmin.response.body.accessToken}}
+
+{
+  "name": "Sala Admin - {{$timestamp}}"
+}
+
+### [SCRIPT 1 - PASSO 3] Listar Todas as Salas
+# @name script1_getAllRooms
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{script1_loginAdmin.response.body.accessToken}}
+
+### [SCRIPT 1 - PASSO 4] Criar Mensagem na Sala
+# @name script1_createMessage
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{script1_loginAdmin.response.body.accessToken}}
+
+{
+  "content": "Mensagem do Administrador - {{$timestamp}}",
+  "room": "{{script1_createRoom.response.body.id}}"
+}
+
+# ============================================
+# 🎯 SCRIPT 2: FLUXO USUÁRIO COMUM
+# ============================================
+
+### [SCRIPT 2 - PASSO 1] Registrar Novo Usuário
+# @name script2_registerUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Usuário Teste {{$timestamp}}",
+  "email": "user{{$timestamp}}@test.com",
+  "password": "user123"
+}
+
+### [SCRIPT 2 - PASSO 2] Login do Novo Usuário
+# @name script2_loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user{{$timestamp}}@test.com",
+  "password": "user123"
+}
+
+### [SCRIPT 2 - PASSO 3] Buscar Salas Disponíveis
+# @name script2_findRooms
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{script2_loginUser.response.body.accessToken}}
+
+### [SCRIPT 2 - PASSO 4] Entrar em uma Sala Específica
+# @name script2_getRoomDetails
+GET {{baseUrl}}/room/{{script1_createRoom.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{script2_loginUser.response.body.accessToken}}
+
+### [SCRIPT 2 - PASSO 5] Enviar Mensagem na Sala
+# @name script2_sendMessage
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{script2_loginUser.response.body.accessToken}}
+
+{
+  "content": "Olá! Sou um usuário comum - {{$timestamp}}",
+  "room": "{{script1_createRoom.response.body.id}}"
+}
+
+# ============================================
+# 🧪 SCRIPT 3: TESTES DE CARGA/STRESS
+# ============================================
+
+### [SCRIPT 3 - PASSO 1] Criar Múltiplos Usuários
+# @name script3_createUser1
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Stress Test User 1",
+  "email": "stress1_{{$timestamp}}@test.com",
+  "password": "stress123"
+}
+
+### [SCRIPT 3 - PASSO 2] Criar Usuário 2
+# @name script3_createUser2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Stress Test User 2",
+  "email": "stress2_{{$timestamp}}@test.com",
+  "password": "stress123"
+}
+
+### [SCRIPT 3 - PASSO 3] Login Simultâneo User 1
+# @name script3_loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "stress1_{{$timestamp}}@test.com",
+  "password": "stress123"
+}
+
+### [SCRIPT 3 - PASSO 4] Login Simultâneo User 2
+# @name script3_loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "stress2_{{$timestamp}}@test.com",
+  "password": "stress123"
+}
+
+### [SCRIPT 3 - PASSO 5] Criar Sala para Stress Test
+# @name script3_createStressRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{script3_loginUser1.response.body.accessToken}}
+
+{
+  "name": "Stress Test Room {{$timestamp}}"
+}
+
+### [SCRIPT 3 - PASSO 6] Envio de Mensagens Sequenciais User 1
+# @name script3_message1
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{script3_loginUser1.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 1 - {{$timestamp}}",
+  "room": "{{script3_createStressRoom.response.body.id}}"
+}
+
+### [SCRIPT 3 - PASSO 7] Envio de Mensagens Sequenciais User 2
+# @name script3_message2
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{script3_loginUser2.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 2 - {{$timestamp}}",
+  "room": "{{script3_createStressRoom.response.body.id}}"
+}
+
+# ============================================
+# 🔍 SCRIPT 4: DEBUGGING E VALIDAÇÕES
+# ============================================
+
+### [SCRIPT 4 - PASSO 1] Teste de Token Inválido
+# @name script4_invalidToken
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer token_invalido_para_teste
+
+### [SCRIPT 4 - PASSO 2] Teste de Criação com Dados Inválidos
+# @name script4_invalidRoomData
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{loginUser.response.body.accessToken}}
+
+{
+  "name": ""
+}
+
+### [SCRIPT 4 - PASSO 3] Teste de Acesso a Recurso Inexistente
+# @name script4_nonExistentRoom
+GET {{baseUrl}}/room/999999
+Content-Type: application/json
+Authorization: Bearer {{loginUser.response.body.accessToken}}
+
+### [SCRIPT 4 - PASSO 4] Teste de Login com Credenciais Inválidas
+# @name script4_invalidLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "email_inexistente@test.com",
+  "password": "senha_errada"
+}
+
+# ============================================
+# 🏠 GERENCIAMENTO DE SALAS
+# ============================================
+
+### Criar Nova Sala
 # @name createRoom
 POST {{baseUrl}}/room
 Content-Type: application/json
@@ -50,19 +281,19 @@ Authorization: Bearer {{accessToken}}
   "name": "Sala de Teste"
 }
 
-### Get All room
+### Listar Todas as Salas
 # @name getAllroom
 GET {{baseUrl}}/room
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-### Get Room by ID
+### Obter Sala por ID
 # @name getRoomById
 GET {{baseUrl}}/room/{{roomId}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-### Update Room
+### Atualizar Sala
 # @name updateRoom
 PUT {{baseUrl}}/room/{{roomId}}
 Content-Type: application/json
@@ -72,8 +303,76 @@ Authorization: Bearer {{accessToken}}
   "name": "Sala de Teste Atualizada"
 }
 
-### Delete Room
+### Deletar Sala
 # @name deleteRoom
 DELETE {{baseUrl}}/room/{{roomId}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+# ============================================
+# 💬 GERENCIAMENTO DE MENSAGENS
+# ============================================
+
+### Criar Nova Mensagem
+# @name createMessage
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "content": "Mensagem de Teste",
+  "room": "{{roomId}}"
+}
+
+### Listar Mensagens de uma Sala
+# @name getMessagesByRoom
+GET {{baseUrl}}/room/{{roomId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Atualizar Mensagem
+# @name updateMessage
+PUT {{baseUrl}}/message/messageId
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "content": "Mensagem Atualizada"
+}
+
+### Deletar Mensagem
+# @name deleteMessage
+DELETE {{baseUrl}}/message/messageId
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+# ============================================
+# 👤 GERENCIAMENTO DE USUÁRIOS
+# ============================================
+
+### Obter Perfil do Usuário
+# @name getUserProfile
+GET {{baseUrl}}/user/profile
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Atualizar Perfil do Usuário
+# @name updateUserProfile
+PUT {{baseUrl}}/user/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Nome Atualizado"
+}
+
+### Atualizar Senha do Usuário
+# @name updateUserPassword
+PUT {{baseUrl}}/user/{{userId}}/password
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "currentPassword": "{{passwordForTesting}}",
+  "newPassword": "novaSenha123"
+}
