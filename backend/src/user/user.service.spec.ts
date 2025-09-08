@@ -112,8 +112,9 @@ describe('UserService', () => {
         id: mockUser.id,
         email: mockUser.email,
         name: mockUser.name,
-        createdAt: mockUser.createdAt,
-        updatedAt: mockUser.updatedAt,
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+        roles: [Roles.USER],
         status: mockUser.status,
       });
 
@@ -172,9 +173,9 @@ describe('UserService', () => {
     it('should throw error when user not found', async () => {
       jest.spyOn(userModel, 'findById').mockResolvedValue(null);
 
-      await expect(userService.findOne(mockUser.id, mockPayload)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        userService.findOne(mockUser.id, mockPayload),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw error when user is not authorized', async () => {
