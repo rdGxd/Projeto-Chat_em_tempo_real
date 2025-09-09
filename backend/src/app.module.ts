@@ -3,7 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { AuthAndPolicyGuard } from './auth/guards/auth-and-policy.guard';
+import { UnifiedAuthAndPolicyGuard } from './auth/guards/unified-auth-and-policy.guard';
+import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
 import { RoomModule } from './room/room.module';
 import { UserModule } from './user/user.module';
@@ -24,12 +25,13 @@ import { UserModule } from './user/user.module';
     AuthModule,
     RoomModule,
     MessageModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AuthAndPolicyGuard,
+      useClass: UnifiedAuthAndPolicyGuard,
     },
   ],
 })
