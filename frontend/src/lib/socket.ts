@@ -3,8 +3,8 @@ import { io, Socket } from "socket.io-client";
 let socket: Socket;
 
 export const connectSocket = () => {
+  const token = Cookies.get("accessToken");
   if (!socket) {
-    const token = Cookies.get("accessToken");
     socket = io("http://localhost:3001", {
       auth: {
         token,

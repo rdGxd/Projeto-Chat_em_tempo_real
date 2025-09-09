@@ -1,6 +1,6 @@
 "use client";
 
-import { connectSocket, getSocket } from "@/lib/socket";
+import { connectSocket } from "@/lib/socket";
 import { MessageTypes } from "@/validators/message.schema";
 import { RoomData } from "@/validators/room.schema";
 import React, { useEffect, useState } from "react";
@@ -16,30 +16,19 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
   const { id } = React.use(params);
   const [messages, setMessages] = useState<MessageTypes[]>([]);
   const [input, setInput] = useState("");
+  const socket = connectSocket();
 
   useEffect(() => {
     const fetchMessages = async () => {
       const takeMessages: RoomData = await getMessageForRoom(id);
+      if (!takeMessages) return;
       setMessages(takeMessages.messages);
     };
 
     fetchMessages();
-    const socket = connectSocket();
 
-    socket.on("connect", () => {
-      console.log("✅ Conectado ao servidor:", socket.id);
-    });
-
-    socket.on("send_message", (msg: string) => {
+    socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
-    });
-
-    socket.on("receive_message", (msg: string) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("❌ Desconectado do servidor");
     });
 
     return () => {
@@ -48,11 +37,7 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
   }, []);
 
   const sendMessage = () => {
-    const socket = getSocket();
-    if (socket && input.trim() !== "") {
-      socket.emit("send_message", input);
-      setInput("");
-    }
+    socket.emit("sendMessage", { content: "algo", room: id });
   };
 
   return (

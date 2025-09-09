@@ -26,7 +26,6 @@ export const createRoom = async (data: CreateRoomInput) => {
     const response = await apiWithAuthentication(token).post("/room", {
       name: roomName,
     });
-    console.log(response.data);
 
     return {
       room: response.data,

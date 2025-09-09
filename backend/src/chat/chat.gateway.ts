@@ -32,13 +32,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `User connected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
     );
   }
-
   handleDisconnect(client: Socket) {
     console.log(
       `User disconnected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
     );
   }
-
   // Usuário entra em uma sala
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
@@ -55,10 +53,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Usuário sai da sala
   @SubscribeMessage('leaveRoom')
-  async handleLeaveRoom(client: Socket, roomId: string, @TokenPayLoadParam() payload: PayloadDto) {
+  async handleLeaveRoom(
+    client: Socket,
+    roomId: string,
+    @TokenPayLoadParam() payload: PayloadDto,
+  ) {
     await this.roomService.leaveTheRoom(roomId, payload);
     client.leave(roomId);
     console.log(`Client ${client.id} left room ${roomId}`);
+    this.server.emit('messageSent', `User ${payload.email} has left the room.`);
 
     client.emit('leftRoom', { roomId });
   }
@@ -67,14 +70,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     client: Socket,
-    payload: { createMessageDto: CreateMessageDto; user: PayloadDto },
+    createMessageDto: CreateMessageDto,
+    @TokenPayLoadParam() payload: PayloadDto,
   ) {
-    const { createMessageDto, user } = payload;
-
+    console.log(createMessageDto, payload);
     const savedMessage = await this.messageService.create(
       createMessageDto,
-      user,
+      payload,
     );
+    this.server.emit('messageSent', savedMessage);
 
     // Confirmação só para quem enviou
     client.emit('messageSent', savedMessage);
