@@ -1,0 +1,243 @@
+# ============================================
+# 🎬 CENÁRIOS DE TESTE ESPECÍFICOS
+# ============================================
+
+@baseUrl = http://localhost:3001
+
+# ============================================
+# 🔥 CENÁRIO A: FLUXO DE ONBOARDING COMPLETO
+# ============================================
+
+### [CENÁRIO A - 1] Registrar Usuário
+# @name scenarioA_register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "email": "joao_{{$timestamp}}@empresa.com",
+  "password": "joao123"
+}
+
+### [CENÁRIO A - 2] Fazer Login
+# @name scenarioA_login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao_{{$timestamp}}@empresa.com",
+  "password": "joao123"
+}
+
+### [CENÁRIO A - 3] Visualizar Perfil
+# @name scenarioA_profile
+GET {{baseUrl}}/user/profile
+Content-Type: application/json
+Authorization: Bearer {{scenarioA_login.response.body.accessToken}}
+
+### [CENÁRIO A - 4] Buscar Salas Disponíveis
+# @name scenarioA_rooms
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{scenarioA_login.response.body.accessToken}}
+
+### [CENÁRIO A - 5] Entrar na Primeira Sala
+# @name scenarioA_joinRoom
+GET {{baseUrl}}/room/1
+Content-Type: application/json
+Authorization: Bearer {{scenarioA_login.response.body.accessToken}}
+
+# ============================================
+# 💼 CENÁRIO B: FLUXO DE ADMINISTRAÇÃO
+# ============================================
+
+### [CENÁRIO B - 1] Login como Admin
+# @name scenarioB_adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com",
+  "password": "admin123"
+}
+
+### [CENÁRIO B - 2] Criar Nova Sala VIP
+# @name scenarioB_createVipRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{scenarioB_adminLogin.response.body.accessToken}}
+
+{
+  "name": "Sala VIP - Gerência {{$timestamp}}"
+}
+
+### [CENÁRIO B - 3] Configurar Sala (Atualizar)
+# @name scenarioB_configureRoom
+PUT {{baseUrl}}/room/{{scenarioB_createVipRoom.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{scenarioB_adminLogin.response.body.accessToken}}
+
+{
+  "name": "Sala VIP - Configurada {{$timestamp}}"
+}
+
+### [CENÁRIO B - 4] Enviar Anúncio na Sala
+# @name scenarioB_announcement
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioB_adminLogin.response.body.accessToken}}
+
+{
+  "content": "🔔 ANÚNCIO: Esta é uma sala VIP para discussões estratégicas - {{$timestamp}}",
+  "room": "{{scenarioB_createVipRoom.response.body.id}}"
+}
+
+### [CENÁRIO B - 5] Listar Todas as Mensagens da Sala
+# @name scenarioB_listMessages
+GET {{baseUrl}}/message?roomId={{scenarioB_createVipRoom.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{scenarioB_adminLogin.response.body.accessToken}}
+
+# ============================================
+# 🚀 CENÁRIO C: SIMULAÇÃO DE CHAT ATIVO
+# ============================================
+
+### [CENÁRIO C - 1] Login User 1
+# @name scenarioC_user1Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user1@chat.com",
+  "password": "user123"
+}
+
+### [CENÁRIO C - 2] Login User 2
+# @name scenarioC_user2Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user2@chat.com",
+  "password": "user123"
+}
+
+### [CENÁRIO C - 3] User 1 Cria Sala de Chat
+# @name scenarioC_createChatRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{scenarioC_user1Login.response.body.accessToken}}
+
+{
+  "name": "Chat Ativo - {{$timestamp}}"
+}
+
+### [CENÁRIO C - 4] User 1 Envia Primeira Mensagem
+# @name scenarioC_user1Message1
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioC_user1Login.response.body.accessToken}}
+
+{
+  "content": "Olá! Alguém online? 👋",
+  "room": "{{scenarioC_createChatRoom.response.body.id}}"
+}
+
+### [CENÁRIO C - 5] User 2 Responde
+# @name scenarioC_user2Message1
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioC_user2Login.response.body.accessToken}}
+
+{
+  "content": "Oi! Sim, estou aqui! 😊",
+  "room": "{{scenarioC_createChatRoom.response.body.id}}"
+}
+
+### [CENÁRIO C - 6] User 1 Continua Conversa
+# @name scenarioC_user1Message2
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioC_user1Login.response.body.accessToken}}
+
+{
+  "content": "Que bom! Como você está hoje?",
+  "room": "{{scenarioC_createChatRoom.response.body.id}}"
+}
+
+### [CENÁRIO C - 7] User 2 Responde Novamente
+# @name scenarioC_user2Message2
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioC_user2Login.response.body.accessToken}}
+
+{
+  "content": "Estou bem, obrigado! E você? 🙂",
+  "room": "{{scenarioC_createChatRoom.response.body.id}}"
+}
+
+# ============================================
+# 🔒 CENÁRIO D: TESTES DE SEGURANÇA
+# ============================================
+
+### [CENÁRIO D - 1] Tentativa de Acesso Sem Token
+# @name scenarioD_noAuth
+GET {{baseUrl}}/room
+Content-Type: application/json
+
+### [CENÁRIO D - 2] Tentativa com Token Expirado/Inválido
+# @name scenarioD_invalidAuth
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.token
+
+### [CENÁRIO D - 3] Tentativa de SQL Injection no Login
+# @name scenarioD_sqlInjection
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com'; DROP TABLE users; --",
+  "password": "any"
+}
+
+### [CENÁRIO D - 4] Tentativa de XSS na Mensagem
+# @name scenarioD_xssAttempt
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{scenarioA_login.response.body.accessToken}}
+
+{
+  "content": "<script>alert('XSS Test')</script>",
+  "room": "1"
+}
+
+### [CENÁRIO D - 5] Teste de Rate Limiting (Múltiplas Requisições)
+# @name scenarioD_rateLimiting1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "wrong"
+}
+
+### [CENÁRIO D - 6] Teste de Rate Limiting 2
+# @name scenarioD_rateLimiting2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "wrong"
+}
+
+### [CENÁRIO D - 7] Teste de Rate Limiting 3
+# @name scenarioD_rateLimiting3
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "wrong"
+}

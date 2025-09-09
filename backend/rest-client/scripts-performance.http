@@ -1,0 +1,285 @@
+# ============================================
+# ⚡ SCRIPTS DE PERFORMANCE E MONITORAMENTO
+# ============================================
+
+@baseUrl = http://localhost:3001
+@testUser = performance_{{$timestamp}}@test.com
+@testPassword = perf123
+
+# ============================================
+# 📊 SCRIPT DE BENCHMARK: CRIAÇÃO DE USUÁRIOS
+# ============================================
+
+### [BENCHMARK 1] Criar Usuário 1
+# @name bench_user1
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Benchmark User 1",
+  "email": "bench1_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [BENCHMARK 2] Criar Usuário 2
+# @name bench_user2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Benchmark User 2",
+  "email": "bench2_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [BENCHMARK 3] Criar Usuário 3
+# @name bench_user3
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Benchmark User 3",
+  "email": "bench3_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [BENCHMARK 4] Criar Usuário 4
+# @name bench_user4
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Benchmark User 4",
+  "email": "bench4_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [BENCHMARK 5] Criar Usuário 5
+# @name bench_user5
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Benchmark User 5",
+  "email": "bench5_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+# ============================================
+# 🔥 SCRIPT DE STRESS: LOGINS SIMULTÂNEOS
+# ============================================
+
+### [STRESS LOGIN 1] Login User 1
+# @name stress_login1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bench1_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [STRESS LOGIN 2] Login User 2
+# @name stress_login2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bench2_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [STRESS LOGIN 3] Login User 3
+# @name stress_login3
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bench3_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [STRESS LOGIN 4] Login User 4
+# @name stress_login4
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bench4_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+### [STRESS LOGIN 5] Login User 5
+# @name stress_login5
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bench5_{{$timestamp}}@test.com",
+  "password": "bench123"
+}
+
+# ============================================
+# 💬 SCRIPT DE CARGA: MENSAGENS EM MASSA
+# ============================================
+
+### [MASS MSG 1] Criar Sala para Teste de Carga
+# @name mass_createRoom
+POST {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{stress_login1.response.body.accessToken}}
+
+{
+  "name": "Sala Teste Carga {{$timestamp}}"
+}
+
+### [MASS MSG 2] User 1 - Mensagem 1
+# @name mass_msg1_user1
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login1.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 1 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 3] User 2 - Mensagem 1
+# @name mass_msg1_user2
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login2.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 2 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 4] User 1 - Mensagem 2
+# @name mass_msg2_user1
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login1.response.body.accessToken}}
+
+{
+  "content": "Mensagem 2 do User 1 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 5] User 3 - Mensagem 1
+# @name mass_msg1_user3
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login3.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 3 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 6] User 2 - Mensagem 2
+# @name mass_msg2_user2
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login2.response.body.accessToken}}
+
+{
+  "content": "Mensagem 2 do User 2 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 7] User 4 - Mensagem 1
+# @name mass_msg1_user4
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login4.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 4 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+### [MASS MSG 8] User 5 - Mensagem 1
+# @name mass_msg1_user5
+POST {{baseUrl}}/message
+Content-Type: application/json
+Authorization: Bearer {{stress_login5.response.body.accessToken}}
+
+{
+  "content": "Mensagem 1 do User 5 - {{$timestamp}}",
+  "room": "{{mass_createRoom.response.body.id}}"
+}
+
+# ============================================
+# 📈 SCRIPT DE MONITORAMENTO: HEALTH CHECKS
+# ============================================
+
+### [HEALTH 1] Verificar Status da API
+# @name health_status
+GET {{baseUrl}}/health
+Content-Type: application/json
+
+### [HEALTH 2] Teste de Conectividade Básica
+# @name health_ping
+GET {{baseUrl}}/
+Content-Type: application/json
+
+### [HEALTH 3] Verificar Endpoint de Autenticação
+# @name health_auth
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "health@test.com",
+  "password": "health123"
+}
+
+### [HEALTH 4] Verificar Rate Limiting
+# @name health_rate1
+GET {{baseUrl}}/room
+Content-Type: application/json
+
+### [HEALTH 5] Verificar Rate Limiting 2
+# @name health_rate2
+GET {{baseUrl}}/room
+Content-Type: application/json
+
+### [HEALTH 6] Verificar Rate Limiting 3
+# @name health_rate3
+GET {{baseUrl}}/room
+Content-Type: application/json
+
+# ============================================
+# 🔄 SCRIPT DE REFRESH TOKEN AUTOMÁTICO
+# ============================================
+
+### [REFRESH 1] Login Inicial
+# @name refresh_initialLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "refresh@test.com",
+  "password": "refresh123"
+}
+
+### [REFRESH 2] Usar Access Token
+# @name refresh_useToken
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{refresh_initialLogin.response.body.accessToken}}
+
+### [REFRESH 3] Renovar Token
+# @name refresh_renewToken
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_initialLogin.response.body.refreshToken}}"
+}
+
+### [REFRESH 4] Usar Novo Token
+# @name refresh_useNewToken
+GET {{baseUrl}}/room
+Content-Type: application/json
+Authorization: Bearer {{refresh_renewToken.response.body.accessToken}}
