@@ -40,6 +40,10 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
     socket.emit("sendMessage", { content: "algo", room: id });
   };
 
+  const joinRoom = () => {
+    socket.emit("joinRoom", id);
+  };
+
   return (
     <div className="flex flex-col items-center p-6">
       <h1 className="text-2xl font-bold mb-4">💬 Chat</h1>
@@ -60,7 +64,7 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
           className="flex-1 border p-2 rounded-l"
           placeholder="Digite sua mensagem..."
         />
-        <button onClick={sendMessage} className="bg-blue-500 text-white px-4 rounded-r">
+        <button onClick={joinRoom} className="bg-blue-500 text-white px-4 rounded-r">
           Enviar
         </button>
       </div>

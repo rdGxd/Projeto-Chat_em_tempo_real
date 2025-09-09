@@ -1,5 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -41,12 +42,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     client: Socket,
-    roomId: string,
+    @MessageBody() roomId: string,
     @TokenPayLoadParam() payload: PayloadDto,
   ) {
     await this.roomService.enterTheRoom(roomId, payload);
     client.join(roomId);
-    console.log(`Client ${client.id} joined room ${roomId}`);
 
     client.emit('joinedRoom', { roomId });
   }
