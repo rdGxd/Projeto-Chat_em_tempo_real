@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/auth/actions/login.ts"
-  ],
+, "src/components/chat-forms/enter-room.tsx"  ],
   "exclude": ["node_modules"]
 }
