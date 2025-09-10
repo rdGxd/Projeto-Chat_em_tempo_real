@@ -13,6 +13,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "plugins": [
       {
         "name": "next"
@@ -27,7 +29,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/auth/actions/login.ts"
-, "src/components/chat-forms/enter-room.tsx"  ],
+    "src/app/auth/actions/login.ts",
+    "src/components/chat-forms/enter-room.tsx"
+  ],
   "exclude": ["node_modules"]
 }
