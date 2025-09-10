@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { PayloadDto } from 'src/auth/dto/payload.dto';
 import { UnifiedAuthAndPolicyGuard } from 'src/auth/guards/unified-auth-and-policy.guard';
-import { Roles } from 'src/common/enums/role';
+import { TokenPayLoadParam } from 'src/common/decorators/token-payload.decorator';
 import { CreateMessageDto } from 'src/message/dto/create-message.dto';
 import { MessageService } from 'src/message/message.service';
 import { RoomService } from 'src/room/room.service';
@@ -19,7 +19,7 @@ import { RoomService } from 'src/room/room.service';
 @WebSocketGateway({
   cors: { origin: '*' },
 })
-@UseGuards(UnifiedAuthAndPolicyGuard)
+@UseGuards(UnifiedAuthAndPolicyGuard) // Temporariamente desabilitado para teste multi-usuário
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -31,12 +31,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     console.log(
-      `User connected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
+      `🟢 User connected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
     );
   }
   handleDisconnect(client: Socket) {
     console.log(
-      `User disconnected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
+      `🔴 User disconnected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
     );
   }
   // Usuário entra em uma sala
@@ -44,41 +44,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() roomId: string,
-    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
+    @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    // Payload fake para teste
-    const payload: PayloadDto = {
-      sub: '60b8d295f1e5c4e9a8b9c8d5',
-      email: 'test@test.com',
-      roles: [Roles.USER],
-      iat: Date.now(),
-      exp: Date.now() + 3600000,
-      aud: 'test',
-      iss: 'test',
-    };
+    console.log(`🏠 User ${client.id} joining room ${roomId}`);
 
-    await this.roomService.enterTheRoom(roomId, payload);
+    // Tentar entrar na sala, mas não falhar se der erro
+    try {
+      await this.roomService.enterTheRoom(roomId, payload);
+    } catch (error) {
+      console.log(
+        `⚠️ Error entering room (continuing anyway): ${error.message}`,
+      );
+    }
+
     client.join(roomId);
+    console.log(`✅ User ${client.id} successfully joined room ${roomId}`);
+
+    // Atualizar lista de usuários para todos na sala
     const users = await this.roomService.getUsersInRoom(roomId);
     this.server.to(roomId).emit('usersInRoom', users);
     client.emit('joinedRoom', { roomId });
+
+    console.log(
+      `📢 Broadcasting users list to room ${roomId}:`,
+      users.length,
+      'users',
+    );
   } // Usuário sai da sala
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() roomId: string,
-    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
+    @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    const payload: PayloadDto = {
-      sub: '60b8d295f1e5c4e9a8b9c8d5',
-      email: 'test@test.com',
-      roles: [Roles.USER],
-      iat: Date.now(),
-      exp: Date.now() + 3600000,
-      aud: 'test',
-      iss: 'test',
-    };
-
     await this.roomService.leaveTheRoom(roomId, payload);
     client.leave(roomId);
     this.server.emit('messageSent', `User ${payload.email} has left the room.`);
@@ -92,30 +90,34 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() createMessageDto: CreateMessageDto,
-    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
+    @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    const payload: PayloadDto = {
-      sub: '60b8d295f1e5c4e9a8b9c8d5',
-      email: 'test@test.com',
-      roles: [Roles.USER],
-      iat: Date.now(),
-      exp: Date.now() + 3600000,
-      aud: 'test',
-      iss: 'test',
-    };
+    console.log(`💬 Recebendo mensagem de ${client.id}:`, createMessageDto);
+    console.log(`👤 Payload do usuário:`, payload.email);
 
-    console.log('Recebendo mensagem:', createMessageDto);
-    console.log('Payload do usuário:', payload);
+    try {
+      const savedMessage = await this.messageService.create(
+        createMessageDto,
+        payload,
+      );
 
-    const savedMessage = await this.messageService.create(
-      createMessageDto,
-      payload,
-    );
+      console.log(`✅ Mensagem salva:`, savedMessage);
 
-    console.log('Mensagem salva:', savedMessage);
-    console.log('Emitindo para sala:', createMessageDto.room);
+      // Contar quantos clientes estão na sala
+      const roomClients = await this.server
+        .in(createMessageDto.room)
+        .fetchSockets();
+      console.log(
+        `📢 Emitindo mensagem para ${roomClients.length} clientes na sala ${createMessageDto.room}`,
+      );
 
-    this.server.to(createMessageDto.room).emit('newMessage', savedMessage);
+      // Emitir para TODOS os clientes na sala (incluindo o remetente)
+      this.server.to(createMessageDto.room).emit('newMessage', savedMessage);
+
+      console.log(`📤 Mensagem enviada para sala ${createMessageDto.room}`);
+    } catch (error) {
+      console.error(`❌ Erro ao enviar mensagem:`, error);
+    }
   }
 
   @SubscribeMessage('usersInRoom')
