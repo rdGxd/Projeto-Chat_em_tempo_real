@@ -1,5 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -10,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { PayloadDto } from 'src/auth/dto/payload.dto';
 import { UnifiedAuthAndPolicyGuard } from 'src/auth/guards/unified-auth-and-policy.guard';
-import { TokenPayLoadParam } from 'src/common/decorators/token-payload.decorator';
+import { Roles } from 'src/common/enums/role';
 import { CreateMessageDto } from 'src/message/dto/create-message.dto';
 import { MessageService } from 'src/message/message.service';
 import { RoomService } from 'src/room/room.service';
@@ -41,60 +42,97 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Usuário entra em uma sala
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
-    client: Socket,
+    @ConnectedSocket() client: Socket,
     @MessageBody() roomId: string,
-    @TokenPayLoadParam() payload: PayloadDto,
+    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
+    // Payload fake para teste
+    const payload: PayloadDto = {
+      sub: '60b8d295f1e5c4e9a8b9c8d5',
+      email: 'test@test.com',
+      roles: [Roles.USER],
+      iat: Date.now(),
+      exp: Date.now() + 3600000,
+      aud: 'test',
+      iss: 'test',
+    };
+
     await this.roomService.enterTheRoom(roomId, payload);
     client.join(roomId);
-
+    const users = await this.roomService.getUsersInRoom(roomId);
+    this.server.to(roomId).emit('usersInRoom', users);
     client.emit('joinedRoom', { roomId });
-  }
-
-  // Usuário sai da sala
+  } // Usuário sai da sala
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
-    client: Socket,
-    roomId: string,
-    @TokenPayLoadParam() payload: PayloadDto,
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomId: string,
+    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
+    const payload: PayloadDto = {
+      sub: '60b8d295f1e5c4e9a8b9c8d5',
+      email: 'test@test.com',
+      roles: [Roles.USER],
+      iat: Date.now(),
+      exp: Date.now() + 3600000,
+      aud: 'test',
+      iss: 'test',
+    };
+
     await this.roomService.leaveTheRoom(roomId, payload);
     client.leave(roomId);
-    console.log(`Client ${client.id} left room ${roomId}`);
     this.server.emit('messageSent', `User ${payload.email} has left the room.`);
-
+    const users = await this.roomService.getUsersInRoom(roomId);
+    this.server.to(roomId).emit('usersInRoom', users); // broadcast para todos na sala
     client.emit('leftRoom', { roomId });
   }
 
   // Envio de mensagem
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
-    client: Socket,
-    createMessageDto: CreateMessageDto,
-    @TokenPayLoadParam() payload: PayloadDto,
+    @ConnectedSocket() client: Socket,
+    @MessageBody() createMessageDto: CreateMessageDto,
+    // @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    console.log(createMessageDto, payload);
+    const payload: PayloadDto = {
+      sub: '60b8d295f1e5c4e9a8b9c8d5',
+      email: 'test@test.com',
+      roles: [Roles.USER],
+      iat: Date.now(),
+      exp: Date.now() + 3600000,
+      aud: 'test',
+      iss: 'test',
+    };
+
+    console.log('Recebendo mensagem:', createMessageDto);
+    console.log('Payload do usuário:', payload);
+
     const savedMessage = await this.messageService.create(
       createMessageDto,
       payload,
     );
-    this.server.emit('messageSent', savedMessage);
 
-    // Confirmação só para quem enviou
-    client.emit('messageSent', savedMessage);
+    console.log('Mensagem salva:', savedMessage);
+    console.log('Emitindo para sala:', createMessageDto.room);
 
-    // Broadcast para os outros na sala (não inclui o remetente)
-    client.broadcast.to(createMessageDto.room).emit('newMessage', savedMessage);
+    this.server.to(createMessageDto.room).emit('newMessage', savedMessage);
   }
 
   @SubscribeMessage('usersInRoom')
-  async handleListUsersInRoom(client: Socket, roomId: string) {
+  async handleListUsersInRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomId: string,
+  ) {
     const users = await this.roomService.getUsersInRoom(roomId);
-
-    // Envia a lista de usuários na sala para o cliente
     client.emit('usersInRoom', users);
+  }
 
-    // Se quiser broadcast para todos na sala, use:
-    // this.server.to(roomId).emit('usersInRoom', users);
+  @SubscribeMessage('getMessages')
+  async handleGetMessages(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomId: string,
+  ) {
+    const messages = await this.roomService.getMessagesForRoom(roomId);
+    client.emit('messagesInRoom', messages);
   }
 }

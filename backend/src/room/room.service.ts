@@ -118,4 +118,8 @@ export class RoomService {
 
     return room.users;
   }
+
+  getMessagesForRoom(roomId: string) {
+    return this.roomModel.findById(roomId).populate('messages').lean();
+  }
 }

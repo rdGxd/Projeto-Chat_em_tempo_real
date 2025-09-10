@@ -1,5 +1,14 @@
 import z from "zod";
-import { MessageSchema } from "./message.schema";
+
+export const MessageSchema = z.object({
+  _id: z.string(),
+  content: z.string(),
+  author: z.string(),
+  room: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  __v: z.number(),
+});
 
 export const CreateRoomSchema = z.object({
   roomName: z.string().min(2).max(100).trim(),
@@ -14,7 +23,7 @@ export const RoomDataSchema = z.object({
   name: z.string().min(2).max(100).trim(),
   users: z.array(
     z.object({
-      id: z.uuid(),
+      messages: z.array(MessageSchema),
       name: z.string().min(2).max(100).trim(),
       email: z.email().trim(),
     }),
@@ -32,3 +41,4 @@ export const RoomDataSchema = z.object({
 export type CreateRoomInput = z.infer<typeof CreateRoomSchema>;
 export type JoinRoomInput = z.infer<typeof JoinRoomSchema>;
 export type RoomData = z.infer<typeof RoomDataSchema>;
+export type TMessageSchema = z.infer<typeof MessageSchema>;
