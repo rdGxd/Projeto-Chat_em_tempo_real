@@ -12,7 +12,11 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
-export function CreateRoomForm() {
+interface CreateRoomFormProps {
+  readonly setRooms?: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+export function CreateRoomForm({ setRooms }: CreateRoomFormProps) {
   const { register, handleSubmit } = useForm<CreateRoomInput>();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -23,12 +27,15 @@ export function CreateRoomForm() {
         const result = await createRoom(data);
 
         if (result?.errors) {
-          result.errors.forEach((error) => toast.error(error.message));
+          result.errors.forEach((error: { message: string }) => toast.error(error.message));
           return;
         }
 
-        toast.success("Room created successfully!");
-        router.push("/chat");
+        if (result?.room) {
+          setRooms?.((prev) => [...prev, result.room]);
+          toast.success("Room created successfully!");
+          router.push("/chat");
+        }
       } catch {
         toast.error("An error occurred while creating the room.");
       }
