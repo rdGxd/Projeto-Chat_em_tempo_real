@@ -30,7 +30,7 @@ export default function ChatPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto p-8 content-center min-h-screen ">
         <CreateRoomForm setRooms={setRooms} />
-        <GetRooms data={rooms} />
+        <GetRooms data={rooms} setRooms={setRooms} />
         <EnterRoomForm />
       </div>
     </>

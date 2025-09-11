@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 interface CreateRoomFormProps {
-  readonly setRooms?: React.Dispatch<React.SetStateAction<RoomData[]>>;
+  readonly setRooms: React.Dispatch<React.SetStateAction<RoomData[]>>;
 }
 
 export function CreateRoomForm({ setRooms }: CreateRoomFormProps) {
@@ -34,7 +34,7 @@ export function CreateRoomForm({ setRooms }: CreateRoomFormProps) {
         if (result?.room) {
           setRooms?.((prev: RoomData[]): RoomData[] => [...prev, result.room]);
           toast.success("Room created successfully!");
-          router.push("/chat");
+          router.push(`/chat/${result.room.id}`);
         }
       } catch {
         toast.error("An error occurred while creating the room.");
