@@ -2,7 +2,7 @@
 
 import { CreateRoomForm } from "@/components/chat-forms/create-room";
 import { EnterRoomForm } from "@/components/chat-forms/enter-room";
-import { ModeToggle } from "@/components/mode-toggle";
+import { Header } from "@/components/header";
 import { GetRooms } from "@/components/rooms";
 import { RoomData } from "@/validators/room.schema";
 import { useEffect, useState } from "react";
@@ -21,9 +21,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="absolute top-4 right-4">
-        <ModeToggle />
-      </div>
+      <Header />
       <div className="flex justify-center pt-10 text-center">
         <h1 className="text-2xl">
           Crie sua <strong className="text-green-500">sala</strong> ou entre em uma{" "}

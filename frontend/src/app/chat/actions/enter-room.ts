@@ -20,11 +20,13 @@ export const enterRoom = async (data: JoinRoomInput) => {
   }
 
   try {
-    const result = await apiWithAuthentication(token).post("");
-    console.log(result.data);
+    const result = await apiWithAuthentication(token).post(`room/join/${data.roomId}`);
+    if (result.status !== 200) {
+      return { errors: [{ message: "Failed to enter the room." }] };
+    }
+    return { success: true };
   } catch (error) {
     console.error(error);
   }
   return { success: false };
-  // Proceed with entering the room
 };

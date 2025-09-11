@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { JoinRoomInput } from "@/validators/room.schema";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -14,20 +15,20 @@ import { toast } from "react-toastify";
 export function EnterRoomForm() {
   const { register, handleSubmit } = useForm<JoinRoomInput>();
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const onSubmit = (data: JoinRoomInput) => {
     startTransition(async () => {
       try {
         const result = await enterRoom(data);
-
         if (result.errors) {
           result.errors.forEach((error) => toast.error(error.message));
           return;
         }
-
-        toast.success("User registered successfully!");
+        toast.success("Successfully entered the room!");
+        router.push(`/chat/${data.roomId}`);
       } catch {
-        toast.error("An error occurred while registering the user.");
+        toast.error("An error occurred while entering the room.");
       }
     });
   };
@@ -58,8 +59,8 @@ export function EnterRoomForm() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isPending}>
-                  Register
+                <Button type="submit" className="w-full cursor-pointer" disabled={isPending}>
+                  Enter for the room
                 </Button>
               </div>
             </div>

@@ -33,4 +33,17 @@ export class RoomController {
   remove(@Param('id') id: string, @TokenPayLoadParam() tokenPayload: any) {
     return this.roomService.remove(id, tokenPayload);
   }
+
+  @Post('leave/:id')
+  leave(
+    @Param('id') id: string,
+    @TokenPayLoadParam() tokenPayload: PayloadDto,
+  ) {
+    return this.roomService.leaveTheRoom(id, tokenPayload);
+  }
+
+  @Post('join/:id')
+  join(@Param('id') id: string, @TokenPayLoadParam() tokenPayload: PayloadDto) {
+    return this.roomService.enterTheRoom(id, tokenPayload);
+  }
 }
