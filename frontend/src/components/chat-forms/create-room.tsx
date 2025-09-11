@@ -6,14 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { CreateRoomInput } from "@/validators/room.schema";
+import { CreateRoomInput, type RoomData } from "@/validators/room.schema";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 interface CreateRoomFormProps {
-  readonly setRooms?: React.Dispatch<React.SetStateAction<any[]>>;
+  readonly setRooms?: React.Dispatch<React.SetStateAction<RoomData[]>>;
 }
 
 export function CreateRoomForm({ setRooms }: CreateRoomFormProps) {
@@ -32,7 +32,7 @@ export function CreateRoomForm({ setRooms }: CreateRoomFormProps) {
         }
 
         if (result?.room) {
-          setRooms?.((prev) => [...prev, result.room]);
+          setRooms?.((prev: RoomData[]): RoomData[] => [...prev, result.room]);
           toast.success("Room created successfully!");
           router.push("/chat");
         }

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { connectSocket } from "@/lib/socket";
 import { RoomData, TMessageSchema } from "@/validators/room.schema";
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -26,6 +27,7 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
   const socket = socketRef.current;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const actualUser = Cookies.get("userEmail") || "Desconhecido";
 
   useEffect(() => {
     socket.emit("joinRoom", id);
@@ -63,6 +65,7 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
   const handleLeave = () => {
     socket.emit("leaveRoom", id);
     socket.disconnect();
+    setUsers((prev) => prev.filter((user) => user.email !== actualUser));
     router.push("/chat");
   };
 
@@ -78,7 +81,7 @@ export default function SlugIdChatPage({ params }: SlugIdChatPageProps) {
         <div className=" mr-4 border p-4 h-96 overflow-y-auto w-full text-center">
           <div className="text-lg font-bold">Pessoas conectadas a sala:</div>
           {users.map((user) => (
-            <div key={user._id}>
+            <div key={user._id} className="mb-2">
               <p className="text-sm mb-1 text-green-300 mt-2">{user.name}</p>
             </div>
           ))}

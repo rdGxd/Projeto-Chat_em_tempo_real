@@ -4,7 +4,6 @@ import { api } from "@/lib/axios";
 import { LoginAuthInput, loginAuthSchema } from "@/validators/auth.schema";
 import { AxiosError } from "axios";
 import { cookies } from "next/headers";
-import Cookies from "js-cookie";
 
 export async function loginUser(dataLogin: LoginAuthInput) {
   const parsed = loginAuthSchema.safeParse(dataLogin);
@@ -29,7 +28,13 @@ export async function loginUser(dataLogin: LoginAuthInput) {
       maxAge: response.data.expiresIn,
     });
 
-    Cookies.set("refreshToken", response.data.refreshToken, {
+    cookieStore.set("userEmail", email, {
+      sameSite: "lax",
+      path: "/",
+      maxAge: response.data.expiresIn,
+    });
+
+    cookieStore.set("refreshToken", response.data.refreshToken, {
       // httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

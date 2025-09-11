@@ -75,7 +75,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() roomId: string,
-    @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
+    @TokenPayLoadParam() payload: PayloadDto,
   ) {
     await this.roomService.leaveTheRoom(roomId, payload);
     client.leave(roomId);
