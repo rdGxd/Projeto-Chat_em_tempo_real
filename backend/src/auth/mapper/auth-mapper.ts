@@ -11,7 +11,7 @@ export class AuthMapper {
     refreshTokenExpiresIn: number;
   }) {
     return plainToInstance(ResponseTokenDto, dto, {
-      excludeExtraneousValues: true
+      excludeExtraneousValues: true,
     });
   }
 }

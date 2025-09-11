@@ -92,9 +92,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should throw NotFoundException if user not found', async () => {
-      jest
-        .spyOn(userService, 'findByEmail')
-        .mockResolvedValue(null as any);
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(null as any);
 
       await expect(
         authService.login({ email: 'test@example.com', password: 'password' }),

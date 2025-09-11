@@ -131,7 +131,9 @@ describe('MessageService', () => {
       jest
         .spyOn(messageModel, 'create')
         .mockResolvedValue(mockMessageEntity as any);
-      jest.spyOn(roomService, 'updateMessages').mockResolvedValue(undefined as any);
+      jest
+        .spyOn(roomService, 'updateMessages')
+        .mockResolvedValue(undefined as any);
 
       // Mock para o retorno final do método - corrigindo o chain do populate
       const mockPopulateResult = {
