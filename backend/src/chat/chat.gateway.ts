@@ -29,16 +29,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly roomService: RoomService,
   ) {}
 
-  handleConnection(client: Socket) {
-    console.log(
-      `🟢 User connected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
-    );
-  }
-  handleDisconnect(client: Socket) {
-    console.log(
-      `🔴 User disconnected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
-    );
-  }
+  handleConnection(client: Socket) {}
+  handleDisconnect(client: Socket) {}
   // Usuário entra em uma sala
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
@@ -46,30 +38,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() roomId: string,
     @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    console.log(`🏠 User ${client.id} joining room ${roomId}`);
-
     // Tentar entrar na sala, mas não falhar se der erro
     try {
       await this.roomService.enterTheRoom(roomId, payload);
-    } catch (error) {
-      console.log(
-        `⚠️ Error entering room (continuing anyway): ${error.message}`,
-      );
-    }
+    } catch {}
 
     client.join(roomId);
-    console.log(`✅ User ${client.id} successfully joined room ${roomId}`);
 
     // Atualizar lista de usuários para todos na sala
     const users = await this.roomService.getUsersInRoom(roomId);
     this.server.to(roomId).emit('usersInRoom', users);
     client.emit('joinedRoom', { roomId });
-
-    console.log(
-      `📢 Broadcasting users list to room ${roomId}:`,
-      users.length,
-      'users',
-    );
   } // Usuário sai da sala
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
@@ -92,32 +71,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() createMessageDto: CreateMessageDto,
     @TokenPayLoadParam() payload: PayloadDto, // Comentado temporariamente
   ) {
-    console.log(`💬 Recebendo mensagem de ${client.id}:`, createMessageDto);
-    console.log(`👤 Payload do usuário:`, payload.email);
-
     try {
       const savedMessage = await this.messageService.create(
         createMessageDto,
         payload,
       );
 
-      console.log(`✅ Mensagem salva:`, savedMessage);
-
       // Contar quantos clientes estão na sala
-      const roomClients = await this.server
-        .in(createMessageDto.room)
-        .fetchSockets();
-      console.log(
-        `📢 Emitindo mensagem para ${roomClients.length} clientes na sala ${createMessageDto.room}`,
-      );
+      await this.server.in(createMessageDto.room).fetchSockets();
 
       // Emitir para TODOS os clientes na sala (incluindo o remetente)
       this.server.to(createMessageDto.room).emit('newMessage', savedMessage);
-
-      console.log(`📤 Mensagem enviada para sala ${createMessageDto.room}`);
-    } catch (error) {
-      console.error(`❌ Erro ao enviar mensagem:`, error);
-    }
+    } catch {}
   }
 
   @SubscribeMessage('usersInRoom')

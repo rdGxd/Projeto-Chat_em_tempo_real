@@ -19,17 +19,11 @@ export const connectSocket = () => {
       timeout: 20000,
     });
 
-    socket.on("connect", () => {
-      console.log("Conectado ao servidor Socket.IO", socket.id);
-    });
+    socket.on("connect", () => {});
 
-    socket.on("disconnect", (reason) => {
-      console.log("Desconectado do servidor Socket.IO:", reason);
-    });
+    socket.on("disconnect", (reason) => {});
 
-    socket.on("connect_error", (error) => {
-      console.error("Erro de conexão Socket.IO:", error);
-    });
+    socket.on("connect_error", (error) => {});
   }
 
   return socket;

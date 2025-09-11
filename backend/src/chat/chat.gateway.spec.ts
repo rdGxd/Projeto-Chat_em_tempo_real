@@ -8,31 +8,21 @@ class TestChatGateway {
   server: any;
 
   constructor(
-    private messageService: any,
-    private roomService: any,
+    private readonly messageService: any,
+    private readonly roomService: any,
   ) {}
 
-  handleConnection(client: Socket) {
-    console.log(
-      `User connected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
-    );
-  }
+  handleConnection(client: Socket) {}
 
-  handleDisconnect(client: Socket) {
-    console.log(
-      `User disconnected: ${client.id} ${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'long' }).format(new Date())}`,
-    );
-  }
+  handleDisconnect(client: Socket) {}
 
   async handleJoinRoom(client: Socket, roomId: string) {
     client.join(roomId);
-    console.log(`Client ${client.id} joined room ${roomId}`);
     client.emit('joinedRoom', { roomId });
   }
 
   handleLeaveRoom(client: Socket, roomId: string) {
     client.leave(roomId);
-    console.log(`Client ${client.id} left room ${roomId}`);
     client.emit('leftRoom', { roomId });
   }
 
@@ -470,28 +460,6 @@ describe('TestChatGateway - Funcionalidade Socket.IO', () => {
       );
 
       consoleSpy.mockRestore();
-    });
-  });
-
-  describe('Resumo dos Testes Socket.IO', () => {
-    it('should validate all socket.io functionality works as expected', () => {
-      // Este teste serve como documentação do que foi testado
-      const functionalityTested = [
-        '✅ Conexão e desconexão de clientes',
-        '✅ Entrada e saída de salas (rooms)',
-        '✅ Envio e recebimento de mensagens',
-        '✅ Listagem de usuários em salas',
-        '✅ Broadcast de mensagens para salas',
-        '✅ Tratamento de erros de serviços',
-        '✅ Workflow completo de chat',
-        '✅ Logs formatados com timestamps',
-      ];
-
-      console.log('\n=== Funcionalidades Socket.IO Testadas ===');
-      functionalityTested.forEach((item) => console.log(item));
-      console.log('=========================================\n');
-
-      expect(functionalityTested).toHaveLength(8);
     });
   });
 });

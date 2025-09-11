@@ -34,7 +34,6 @@ export const createRoom = async (data: CreateRoomInput) => {
     console.error("Login failed:", error);
     if ((error as AxiosError).isAxiosError) {
       const axiosError = error as AxiosError;
-      console.log(axiosError.response);
       const message =
         typeof axiosError.response?.data === "object" &&
         "message" in (axiosError.response?.data ?? {})
