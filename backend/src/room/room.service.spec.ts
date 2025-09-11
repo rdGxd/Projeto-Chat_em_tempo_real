@@ -156,7 +156,9 @@ describe('RoomService', () => {
       // Mock da query encadeada do Mongoose para findById
       jest.spyOn(roomModel, 'findById').mockReturnValue({
         populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockResolvedValue(mockRoomEntity),
+          populate: jest.fn().mockReturnValue({
+            populate: jest.fn().mockResolvedValue(mockRoomEntity),
+          }),
         }),
       } as any);
 
@@ -177,7 +179,9 @@ describe('RoomService', () => {
       // Mock da query que retorna null
       jest.spyOn(roomModel, 'findById').mockReturnValue({
         populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockResolvedValue(null),
+          populate: jest.fn().mockReturnValue({
+            populate: jest.fn().mockResolvedValue(null),
+          }),
         }),
       } as any);
 

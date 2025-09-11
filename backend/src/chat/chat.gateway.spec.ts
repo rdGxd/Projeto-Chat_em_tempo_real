@@ -12,17 +12,25 @@ class TestChatGateway {
     private readonly roomService: any,
   ) {}
 
-  handleConnection(client: Socket) {}
+  handleConnection(client: Socket) {
+    const timestamp = new Date().toLocaleString('pt-BR');
+    console.log(`User connected: ${client.id} ${timestamp}`);
+  }
 
-  handleDisconnect(client: Socket) {}
+  handleDisconnect(client: Socket) {
+    const timestamp = new Date().toLocaleString('pt-BR');
+    console.log(`User disconnected: ${client.id} ${timestamp}`);
+  }
 
   async handleJoinRoom(client: Socket, roomId: string) {
     client.join(roomId);
+    console.log(`Client ${client.id} joined room ${roomId}`);
     client.emit('joinedRoom', { roomId });
   }
 
   handleLeaveRoom(client: Socket, roomId: string) {
     client.leave(roomId);
+    console.log(`Client ${client.id} left room ${roomId}`);
     client.emit('leftRoom', { roomId });
   }
 

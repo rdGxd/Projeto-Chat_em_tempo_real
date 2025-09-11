@@ -29,8 +29,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly roomService: RoomService,
   ) {}
 
-  handleConnection(client: Socket) {}
-  handleDisconnect(client: Socket) {}
+  handleConnection(client: Socket) {
+    console.log(`User connected: ${client.id}`);
+    const timestamp = new Date().toLocaleString('pt-BR');
+    console.log(`User connected: ${client.id} ${timestamp}`);
+  }
+
+  handleDisconnect(client: Socket) {
+    console.log(`User disconnected: ${client.id}`);
+    const timestamp = new Date().toLocaleString('pt-BR');
+    console.log(`User disconnected: ${client.id} ${timestamp}`);
+  }
   // Usuário entra em uma sala
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
@@ -44,6 +53,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch {}
 
     client.join(roomId);
+    console.log(`Client ${client.id} joined room ${roomId}`);
 
     // Atualizar lista de usuários para todos na sala
     const users = await this.roomService.getUsersInRoom(roomId);
@@ -58,6 +68,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     await this.roomService.leaveTheRoom(roomId, payload);
     client.leave(roomId);
+    console.log(`Client ${client.id} left room ${roomId}`);
     this.server.emit('messageSent', `User ${payload.email} has left the room.`);
     const users = await this.roomService.getUsersInRoom(roomId);
     this.server.to(roomId).emit('usersInRoom', users); // broadcast para todos na sala
