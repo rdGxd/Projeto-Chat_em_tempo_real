@@ -1,4 +1,8 @@
+import { PayloadDto } from '../auth/dto/payload.dto';
+import { Roles } from '../common/enums/role';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserController } from './user.controller';
+import { UserService } from './user.service';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -10,8 +14,8 @@ describe('UserController', () => {
     remove: jest.fn(),
   };
 
-  beforeEach(async () => {
-    controller = new UserController(userServiceMock as any);
+  beforeEach(() => {
+    controller = new UserController(userServiceMock as unknown as UserService);
   });
 
   it('should be defined', () => {
@@ -30,7 +34,15 @@ describe('UserController', () => {
 
   it('findOne', async () => {
     const expected = { anyKey: 'anyValue' };
-    const mockTokenPayloadDto = { sub: 'anyId', routePolicies: [] } as any;
+    const mockTokenPayloadDto: PayloadDto = {
+      sub: 'anyId',
+      email: 'test@example.com',
+      roles: [Roles.USER],
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      aud: 'test-audience',
+      iss: 'test-issuer',
+    };
 
     jest.spyOn(userServiceMock, 'findOne').mockReturnValue(expected);
 
@@ -43,28 +55,47 @@ describe('UserController', () => {
   });
 
   it('Update', async () => {
-    const argument = { key: 'value' };
+    const updateUserDto: UpdateUserDto = {
+      name: 'Updated Name',
+      email: 'updated@example.com',
+    };
     const expected = { anyKey: 'anyValue' };
-    const mockTokenPayloadDto = { sub: 'user-id', routePolicies: [] } as any;
+    const mockTokenPayloadDto: PayloadDto = {
+      sub: 'user-id',
+      email: 'test@example.com',
+      roles: [Roles.USER],
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      aud: 'test-audience',
+      iss: 'test-issuer',
+    };
 
     jest.spyOn(userServiceMock, 'update').mockReturnValue(expected);
 
     const result = await controller.update(
       'user-id',
-      argument as any,
+      updateUserDto,
       mockTokenPayloadDto,
     );
     expect(result).toEqual(expected);
     expect(userServiceMock.update).toHaveBeenCalledWith(
       'user-id',
-      argument,
+      updateUserDto,
       mockTokenPayloadDto,
     );
   });
 
   it('Remove', async () => {
     const expected = { anyKey: 'anyValue' };
-    const mockTokenPayloadDto = { sub: 'user-id', routePolicies: [] } as any;
+    const mockTokenPayloadDto: PayloadDto = {
+      sub: 'user-id',
+      email: 'test@example.com',
+      roles: [Roles.USER],
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      aud: 'test-audience',
+      iss: 'test-issuer',
+    };
 
     jest.spyOn(userServiceMock, 'remove').mockReturnValue(expected);
 

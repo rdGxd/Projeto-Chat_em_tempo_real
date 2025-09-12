@@ -93,7 +93,7 @@ export class UserService {
     return this.userMapper.toResponse(deletedUser);
   }
 
-  // NOTE: Método apenas para uso da aplicação
+  // * NOTE: Método apenas para uso da aplicação
   async findByEmail(email: string) {
     const user = await this.userModel.findOne({ email });
     if (!user) {
@@ -102,7 +102,7 @@ export class UserService {
     return user;
   }
 
-  // NOTE: Método apenas para uso da aplicação
+  // * NOTE: Método apenas para uso da aplicação
   async findById(id: string) {
     const user = await this.userModel.findById(id);
     if (!user) {
@@ -111,7 +111,7 @@ export class UserService {
     return user;
   }
 
-  // NOTE: Método apenas para uso da aplicação
+  // * NOTE: Método apenas para uso da aplicação
   async findOneByPayload(payload: PayloadDto) {
     const user = await this.userModel.findById(payload.sub);
     if (!user) {
@@ -120,7 +120,7 @@ export class UserService {
     return this.userMapper.toResponse(user);
   }
 
-  // NOTE: Método apenas para uso da aplicação
+  // * NOTE: Método apenas para uso da aplicação
   private async ensureUserIsOwner(payload: PayloadDto, id: string) {
     const user = await this.findById(id);
     if (!user) {

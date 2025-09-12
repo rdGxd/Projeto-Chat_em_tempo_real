@@ -1,21 +1,23 @@
 import { Roles } from 'src/common/enums/role';
 import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { PayloadDto } from './dto/payload.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { ResponseTokenDto } from './dto/response-token.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  const authServiceMock = {
+  const authServiceMock: Partial<AuthService> = {
     login: jest.fn(),
     register: jest.fn(),
     getProfile: jest.fn(),
     refreshTokens: jest.fn(),
   };
 
-  beforeEach(async () => {
-    controller = new AuthController(authServiceMock as any);
+  beforeEach(() => {
+    controller = new AuthController({ ...authServiceMock } as AuthService);
   });
 
   it('should be defined', () => {
@@ -59,8 +61,11 @@ describe('AuthController', () => {
     const refreshTokenDto: RefreshTokenDto = {
       refreshToken: 'refresh-token',
     };
-    const mockResult = { accessToken: 'newAccessToken', refreshToken: 'any' };
-    jest.spyOn(authServiceMock, 'refreshTokens').mockResolvedValue(mockResult);
+    const accessToken = process.env.TEST_ACCESS_TOKEN;
+    const mockResult = { accessToken, refreshToken: 'any' };
+    jest
+      .spyOn(authServiceMock, 'refreshTokens')
+      .mockResolvedValue(mockResult as ResponseTokenDto);
 
     const result = await controller.refresh(refreshTokenDto);
 

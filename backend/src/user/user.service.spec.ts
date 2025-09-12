@@ -301,15 +301,20 @@ describe('UserService', () => {
       expect(result).toEqual(mockUser);
     });
 
-    it('should throw error when user not found', async () => {
+    it('should throw error when user not found during password update', async () => {
+      const updatePasswordDto: UpdatePasswordDto = {
+        oldPassword: 'oldPassword',
+        newPassword: 'newPassword',
+      };
+
       jest.spyOn(userModel, 'findById').mockResolvedValue(null);
 
       await expect(
-        userService.findOne(mockUser.id, mockPayload),
+        userService.updatePassword(mockUser.id, updatePasswordDto, mockPayload),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw error when user is not authorized', async () => {
+    it('should throw error when user is not authorized for password update', async () => {
       const unauthorizedPayload: PayloadDto = {
         sub: 'different-user-id',
         email: 'different@example.com',
@@ -320,11 +325,39 @@ describe('UserService', () => {
         iss: 'test',
       };
 
+      const updatePasswordDto: UpdatePasswordDto = {
+        oldPassword: 'oldPassword',
+        newPassword: 'newPassword',
+      };
+
       jest.spyOn(userModel, 'findById').mockResolvedValue(mockUser);
 
       await expect(
-        userService.findOne(unauthorizedPayload.sub, mockPayload),
+        userService.updatePassword(
+          mockUser.id,
+          updatePasswordDto,
+          unauthorizedPayload,
+        ),
       ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw error when old password is incorrect', async () => {
+      const updatePasswordDto: UpdatePasswordDto = {
+        oldPassword: 'wrongOldPassword',
+        newPassword: 'newPassword',
+      };
+
+      jest.spyOn(userModel, 'findById').mockResolvedValue(mockUser);
+      jest.spyOn(hashingService, 'compare').mockResolvedValue(false);
+
+      await expect(
+        userService.updatePassword(mockUser.id, updatePasswordDto, mockPayload),
+      ).rejects.toThrow(UnauthorizedException);
+
+      expect(hashingService.compare).toHaveBeenCalledWith(
+        updatePasswordDto.oldPassword,
+        mockUser.password,
+      );
     });
   });
 

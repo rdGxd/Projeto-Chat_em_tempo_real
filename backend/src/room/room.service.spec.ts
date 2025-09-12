@@ -12,7 +12,7 @@ describe('RoomService', () => {
   let roomModel: Model<RoomDocument>;
 
   const mockPayload = {
-    sub: 'user-id',
+    sub: '507f1f77bcf86cd799439012',
     email: 'user@example.com',
     roles: [Roles.USER],
     iat: Date.now(),
@@ -289,6 +289,207 @@ describe('RoomService', () => {
         '507f1f77bcf86cd799439011',
       );
       expect(roomModel.findByIdAndDelete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('enterTheRoom', () => {
+    it('should add user to room successfully', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockRoomForEnter = {
+        _id: mockObjectId,
+        name: 'Test Room',
+        owner: mockUserId,
+        users: {
+          includes: jest.fn().mockReturnValue(false),
+          push: jest.fn(),
+        },
+        messages: [],
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      jest
+        .spyOn(roomModel, 'findById')
+        .mockResolvedValue(mockRoomForEnter as any);
+      jest
+        .spyOn(roomMapper, 'toResponse')
+        .mockReturnValue(mockRoomResponse as any);
+
+      const result = await roomService.enterTheRoom(roomId, mockPayload);
+
+      expect(roomModel.findById).toHaveBeenCalledWith(roomId);
+      expect(mockRoomForEnter.users.includes).toHaveBeenCalledWith(
+        new Types.ObjectId(mockPayload.sub),
+      );
+      expect(mockRoomForEnter.users.push).toHaveBeenCalledWith(
+        new Types.ObjectId(mockPayload.sub),
+      );
+      expect(mockRoomForEnter.save).toHaveBeenCalled();
+      expect(roomMapper.toResponse).toHaveBeenCalledWith(mockRoomForEnter);
+      expect(result).toEqual(mockRoomResponse);
+    });
+
+    it('should throw NotFoundException when room does not exist', async () => {
+      const roomId = 'non-existent-room';
+
+      jest.spyOn(roomModel, 'findById').mockResolvedValue(null);
+
+      await expect(
+        roomService.enterTheRoom(roomId, mockPayload),
+      ).rejects.toThrow('Room not found');
+    });
+
+    it('should throw ForbiddenException when user is already in the room', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockRoomWithUser = {
+        _id: mockObjectId,
+        name: 'Test Room',
+        owner: mockUserId,
+        users: {
+          includes: jest.fn().mockReturnValue(true),
+        },
+        messages: [],
+      };
+
+      jest
+        .spyOn(roomModel, 'findById')
+        .mockResolvedValue(mockRoomWithUser as any);
+
+      await expect(
+        roomService.enterTheRoom(roomId, mockPayload),
+      ).rejects.toThrow('User is already in the room');
+    });
+  });
+
+  describe('leaveTheRoom', () => {
+    it('should remove user from room successfully', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockIncludesFn = jest.fn().mockReturnValue(true);
+      const mockFilterFn = jest.fn().mockReturnValue([]);
+      const mockRoomForLeave = {
+        _id: mockObjectId,
+        name: 'Test Room',
+        owner: mockUserId,
+        users: {
+          includes: mockIncludesFn,
+          filter: mockFilterFn,
+        },
+        messages: [],
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      jest
+        .spyOn(roomModel, 'findById')
+        .mockResolvedValue(mockRoomForLeave as any);
+      jest
+        .spyOn(roomMapper, 'toResponse')
+        .mockReturnValue(mockRoomResponse as any);
+
+      const result = await roomService.leaveTheRoom(roomId, mockPayload);
+
+      expect(roomModel.findById).toHaveBeenCalledWith(roomId);
+      expect(mockIncludesFn).toHaveBeenCalledWith(
+        new Types.ObjectId(mockPayload.sub),
+      );
+      expect(mockRoomForLeave.save).toHaveBeenCalled();
+      expect(roomMapper.toResponse).toHaveBeenCalledWith(mockRoomForLeave);
+      expect(result).toEqual(mockRoomResponse);
+    });
+
+    it('should throw NotFoundException when room does not exist', async () => {
+      const roomId = 'non-existent-room';
+
+      jest.spyOn(roomModel, 'findById').mockResolvedValue(null);
+
+      await expect(
+        roomService.leaveTheRoom(roomId, mockPayload),
+      ).rejects.toThrow('Room not found');
+    });
+
+    it('should throw ForbiddenException when user is not in the room', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockRoomWithoutUser = {
+        _id: mockObjectId,
+        name: 'Test Room',
+        owner: mockUserId,
+        users: {
+          includes: jest.fn().mockReturnValue(false),
+        },
+        messages: [],
+      };
+
+      jest
+        .spyOn(roomModel, 'findById')
+        .mockResolvedValue(mockRoomWithoutUser as any);
+
+      await expect(
+        roomService.leaveTheRoom(roomId, mockPayload),
+      ).rejects.toThrow('User is not in the room');
+    });
+  });
+
+  describe('getUsersInRoom', () => {
+    it('should return users in room', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockUsers = [
+        { _id: mockUserId, name: 'Test User', email: 'test@example.com' },
+      ];
+      const mockRoomWithUsers = {
+        ...mockRoomEntity,
+        users: mockUsers,
+      };
+
+      jest.spyOn(roomModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(mockRoomWithUsers),
+        }),
+      } as any);
+
+      const result = await roomService.getUsersInRoom(roomId);
+
+      expect(roomModel.findById).toHaveBeenCalledWith(roomId);
+      expect(result).toEqual(mockUsers);
+    });
+
+    it('should throw NotFoundException when room does not exist', async () => {
+      const roomId = 'non-existent-room';
+
+      jest.spyOn(roomModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(null),
+        }),
+      } as any);
+
+      await expect(roomService.getUsersInRoom(roomId)).rejects.toThrow(
+        'Room not found',
+      );
+    });
+  });
+
+  describe('getMessagesForRoom', () => {
+    it('should return messages for room', async () => {
+      const roomId = '507f1f77bcf86cd799439011';
+      const mockMessages = [
+        {
+          _id: new Types.ObjectId(),
+          content: 'Test message',
+          author: mockUserId,
+        },
+      ];
+      const mockRoomWithMessages = {
+        ...mockRoomEntity,
+        messages: mockMessages,
+      };
+
+      jest.spyOn(roomModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(mockRoomWithMessages),
+        }),
+      } as any);
+
+      const result = await roomService.getMessagesForRoom(roomId);
+
+      expect(roomModel.findById).toHaveBeenCalledWith(roomId);
+      expect(result).toEqual(mockRoomWithMessages);
     });
   });
 });

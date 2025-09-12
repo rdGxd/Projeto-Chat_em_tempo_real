@@ -1,29 +1,26 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Chat em Tempo Real - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API backend para sistema de chat em tempo real utilizando NestJS, Socket.IO, MongoDB e JWT.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descrição
 
-## Description
+Esta API fornece funcionalidades completas para um sistema de chat em tempo real, incluindo:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Autenticação e autorização com JWT
+- Gerenciamento de usuários
+- Criação e gerenciamento de salas de chat
+- Envio e recebimento de mensagens em tempo real via WebSocket
+- Documentação completa da API com Swagger
+
+## Tecnologias Utilizadas
+
+- **NestJS** - Framework Node.js
+- **Socket.IO** - WebSocket para comunicação em tempo real
+- **MongoDB com Mongoose** - Banco de dados NoSQL
+- **JWT** - Autenticação e autorização
+- **Swagger** - Documentação da API
+- **TypeScript** - Linguagem de programação
+- **Class Validator** - Validação de dados
 
 ## Project setup
 
@@ -31,68 +28,166 @@
 $ pnpm install
 ```
 
-## Compile and run the project
+## Pré-requisitos
+
+- Node.js (versão 16 ou superior)
+- PNPM
+- MongoDB (local ou na nuvem)
+
+## Configuração
+
+1. Clone o repositório
+2. Instale as dependências:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+3. Configure as variáveis de ambiente (crie um arquivo `.env`):
+
+```env
+APP_PORT=3001
+MONGO_URI=mongodb://localhost:27017/chat-realtime
+JWT_SECRET=seu-jwt-secret-aqui
+JWT_EXPIRES_IN=3600
+JWT_REFRESH_SECRET=seu-refresh-secret-aqui
+JWT_REFRESH_EXPIRES_IN=604800
+```
+
+## Executando o Projeto
 
 ```bash
-# unit tests
-$ pnpm run test
+# desenvolvimento
+pnpm run start
 
-# e2e tests
-$ pnpm run test:e2e
+# modo watch (desenvolvimento com hot reload)
+pnpm run start:dev
 
-# test coverage
-$ pnpm run test:cov
+# produção
+pnpm run start:prod
 ```
 
-## Deployment
+## Documentação da API
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Swagger UI
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Após iniciar o servidor, acesse a documentação interativa da API:
+
+- **URL:** http://localhost:3001/api
+- **Descrição:** Interface completa com todos os endpoints, modelos de dados e possibilidade de testar as APIs
+
+### WebSocket Documentation
+
+Para documentação dos eventos WebSocket, consulte o arquivo:
+
+- [`WEBSOCKET_DOCUMENTATION.md`](./WEBSOCKET_DOCUMENTATION.md)
+
+## Endpoints Principais
+
+### Autenticação (`/auth`)
+
+- `POST /auth/login` - Login do usuário
+- `POST /auth/register` - Registro de novo usuário
+- `GET /auth/profile` - Obter perfil do usuário autenticado
+- `POST /auth/refresh` - Renovar tokens
+
+### Usuários (`/user`)
+
+- `GET /user` - Listar todos os usuários
+- `GET /user/:id` - Buscar usuário por ID
+- `PATCH /user/:id` - Atualizar usuário
+- `PATCH /user/:id/password` - Atualizar senha
+- `DELETE /user/:id` - Deletar usuário
+
+### Salas (`/room`)
+
+- `POST /room` - Criar sala
+- `GET /room` - Listar salas (público)
+- `GET /room/:id` - Buscar sala por ID (público)
+- `DELETE /room/:id` - Deletar sala
+- `POST /room/join/:id` - Entrar na sala
+- `POST /room/leave/:id` - Sair da sala
+
+### Mensagens (`/message`)
+
+- `POST /message` - Criar mensagem
+- `GET /message` - Listar mensagens do usuário
+- `GET /message/:id` - Buscar mensagem por ID
+- `PATCH /message/:id` - Atualizar mensagem
+- `DELETE /message/:id` - Deletar mensagem
+
+## WebSocket Events
+
+### Cliente para Servidor
+
+- `joinRoom` - Entrar em sala
+- `leaveRoom` - Sair da sala
+- `sendMessage` - Enviar mensagem
+- `usersInRoom` - Listar usuários na sala
+- `getMessages` - Obter mensagens da sala
+
+### Servidor para Cliente
+
+- `joinedRoom` - Confirmação de entrada na sala
+- `leftRoom` - Confirmação de saída da sala
+- `newMessage` - Nova mensagem recebida
+- `usersInRoom` - Lista de usuários na sala
+- `messagesInRoom` - Histórico de mensagens
+
+## Testes
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# testes unitários
+pnpm run test
+
+# testes e2e
+pnpm run test:e2e
+
+# cobertura de testes
+pnpm run test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Estrutura do Projeto
 
-## Resources
+```
+src/
+├── auth/              # Módulo de autenticação
+│   ├── controllers/   # Controllers
+│   ├── services/      # Services
+│   ├── dto/          # Data Transfer Objects
+│   ├── guards/       # Guards de autenticação
+│   └── decorators/   # Decorators customizados
+├── user/             # Módulo de usuários
+├── room/             # Módulo de salas
+├── message/          # Módulo de mensagens
+├── chat/             # Gateway WebSocket
+└── common/           # Utilitários compartilhados
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Funcionalidades
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- ✅ Autenticação JWT com refresh tokens
+- ✅ CRUD completo de usuários, salas e mensagens
+- ✅ Chat em tempo real via WebSocket
+- ✅ Documentação Swagger completa
+- ✅ Validação de dados com class-validator
+- ✅ Guards de autorização
+- ✅ Criptografia de senhas com bcrypt
+- ✅ CORS configurado
+- ✅ Testes unitários e e2e
 
-## Support
+## Segurança
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Autenticação JWT obrigatória (exceto endpoints públicos)
+- Validação rigorosa de entrada de dados
+- Criptografia de senhas com bcrypt
+- Guards de autorização para proteger recursos
+- CORS configurado adequadamente
 
-## Stay in touch
+## Contribuição
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
